@@ -6,15 +6,15 @@ module.exports = {
 		.setName('trade')
 		.setDescription('Creates an escrow channel and requests a middleperson.\n\n**Usage:**\n/trade @trader1 wts 100 USDC 3000')
 		.addUserOption(option => option.setName('partner').setDescription('The user you want to trade with.').setRequired(true))
-		.addStringOption(option => option.setName('wts-or-wtb').setDescription('Are you selling or buying tao?').setRequired(true))
-		.addNumberOption(option => option.setName('amount').setDescription('How much tao are you trading?').setRequired(true))
+		.addStringOption(option => option.setName('wts-or-wtb').setDescription('Are you selling or buying quil?').setRequired(true))
+		.addNumberOption(option => option.setName('amount').setDescription('How much quil are you trading?').setRequired(true))
 		.addStringOption(option => option.setName('payment-currency').setDescription('Token expected by seller (ETH, USDC, etc)').setRequired(true))
 		.addNumberOption(option => option.setName('total-price').setDescription('Total amount to be sent to seller by buyer in').setRequired(true)),
 	async execute(interaction) {
 		// generate random 8 character string
 		const ticket_id = Math.random().toString(36).substring(2, 10);
 		const partner = interaction.options.getUser('partner');
-		
+
 		// verify partner is not self, or bot
 		if (partner.id === interaction.user.id) {
 			return interaction.reply({ content: 'You cannot trade with yourself.', ephemeral: true });
@@ -28,7 +28,7 @@ module.exports = {
 
 		// ensure wts_or_wtb is valid
 		if (!selling_keys.includes(wts_or_wtb) && !buying_keys.includes(wts_or_wtb)) {
-			return interaction.reply({ content: 'You must specify whether you are selling or buying tao.', ephemeral: true });
+			return interaction.reply({ content: 'You must specify whether you are selling or buying quil.', ephemeral: true });
 		} else if (selling_keys.includes(wts_or_wtb)) {
 			wts_or_wtb = 0; // 0 for selling 1 for buying
 		} else if (buying_keys.includes(wts_or_wtb)) {
@@ -39,7 +39,7 @@ module.exports = {
 
 		// ensure amount is valid
 		if (amount <= 0) {
-			return interaction.reply({ content: 'You must specify a valid amount of tao.', ephemeral: true });
+			return interaction.reply({ content: 'You must specify a valid amount of quil.', ephemeral: true });
 		}
 
 		const currency = interaction.options.getString('payment-currency').toUpperCase();
@@ -66,10 +66,10 @@ module.exports = {
 			currency,
 			total_price,
 			ticket_id
-		)) 
+		))
 
 		return interaction.reply({
-			content: `You want to ${wts_or_wtb ? "buy" : "sell"} ${amount} tao ${wts_or_wtb ? "from" : "to"} ${partner} for a total of ${total_price} ${currency}.\n\n**WARNING:** *Scammers will try to impersonate other users through DMs. For that reason, **All trades are to be conducted within this server.** Please be careful when trading with someone you don't know. If you are unsure, please ask a moderator for help.*`,
+			content: `You want to ${wts_or_wtb ? "buy" : "sell"} ${amount} quil ${wts_or_wtb ? "from" : "to"} ${partner} for a total of ${total_price} ${currency}.\n\n**WARNING:** *Scammers will try to impersonate other users through DMs. For that reason, **All trades are to be conducted within this server.** Please be careful when trading with someone you don't know. If you are unsure, please ask a moderator for help.*`,
 			components: [actionrow],
 			ephemeral: true
 		}).then(() => {

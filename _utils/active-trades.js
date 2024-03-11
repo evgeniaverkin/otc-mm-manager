@@ -92,7 +92,7 @@ async function LoadTrades(category) {
     let mentions = a_trades.map(a => {
         return ([a.initiator.id, a.partner.id]);
     });
-    
+
     for (let i = 0; i < botMessages.length; i++) {
         const message = botMessages[i];
         const mentions = message.mentions.users.map(a => a.id);
@@ -128,12 +128,12 @@ async function LoadTrades(category) {
         /*
         @CreativeBuilds has initiated a trade request with you @Mike The Node Daddy.
         Trade:
-        CreativeBuilds is selling 15000 tao for a total of 460000 USDC
+        CreativeBuilds is selling 15000 quil for a total of 460000 USDC
 
         Please confirm or cancel by clicking the buttons below.
         Note: all messages in trade channels are logged and can be used as evidence in the event of a dispute.
         */
-        
+
         const ids = content.match(/<@!?\d+>/g);
         if(!ids) return;
         const initatior_id = ids[0].slice(2, -1);
@@ -150,7 +150,7 @@ async function LoadTrades(category) {
         }
         const TRADE = content.split("```")[1];
         const numbers = TRADE.split(" ").map(a => Number(a.trim().replaceAll(",",""))).filter(a => !isNaN(a));
-        const tao_amount = numbers[0];
+        const quil_amount = numbers[0];
         const total_price = numbers[1];
 
         let members = (await message.guild.members.fetch()).map(a => a);
@@ -162,12 +162,11 @@ async function LoadTrades(category) {
             initiator: initiator,
             partner: partner,
             wts_or_wtb: wts_or_wtb,
-            amount: tao_amount,
+            amount: quil_amount,
             currency: currency,
             total_price: total_price,
             ticket_id: ticket_id
         }
-
     }
 
 
@@ -195,20 +194,20 @@ async function RemoveStaleTrades() {
         try {
             const trade = stale[i];
             await trade.channel.delete();
-    
+
             // dm users that trade was cancelled
             const initiator = trade.initiator;
             const partner = trade.partner;
             const middle = trade.middlemen[0];
-    
+
             const initiator_dm = await initiator.createDM();
             const partner_dm = await partner.createDM();
             const middle_dm = middle ? await middle.createDM() : null;
-    
+
             await initiator_dm.send(`Your trade with ${partner} has been cancelled due to inactivity for 12h.`);
             await partner_dm.send(`Your trade with ${initiator} has been cancelled due to inactivity for 12h.`);
             if(middle_dm) await middle_dm.send(`The trade with ${initiator} and ${partner} has been cancelled due to inactivity for 12h.`);
-    
+
             active_trades.delete(trade.ticket_id);
 
         } catch(err) {

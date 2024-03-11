@@ -8,13 +8,13 @@
 
 // invite: https://discord.com/api/oauth2/authorize?client_id=1025021163904172043&permissions=76880&scope=bot%20applications.commands
 
-const { GatewayIntentBits } = require("discord.js");
+const {GatewayIntentBits} = require("discord.js");
 const Discord = require("discord.js");
 require("dotenv").config();
 const fs = require("node:fs");
 const path = require("node:path");
-const { CreateChannelCategory } = require("./_helpers/CreateChannelCategory");
-const { active_trades, LoadTrades } = require("./_utils/active-trades");
+const {CreateChannelCategory} = require("./_helpers/CreateChannelCategory");
+const {active_trades, LoadTrades} = require("./_utils/active-trades");
 
 const TimeFormat = new Intl.DateTimeFormat("en-US", {
   // no year
@@ -26,6 +26,7 @@ const TimeFormat = new Intl.DateTimeFormat("en-US", {
   second: "numeric",
   hour12: true,
 });
+
 async function start() {
   // with valid intents
   const client = new Discord.Client({
@@ -81,7 +82,7 @@ async function start() {
     const POSITION_LENGTH = all_categories.size;
     let activeTrade = active_trades.get(key);
     if (!activeTrade && command == "confirmTrade") {
-      await interaction.reply({ content: "This trade has expired", ephemeral: true });
+      await interaction.reply({content: "This trade has expired", ephemeral: true});
       await interaction.message.edit({
         components: []
       });
@@ -126,10 +127,15 @@ async function start() {
                 id: activeTrade.partner.id,
                 allow: ["ViewChannel"],
               },
+              {
+                id: process.env.MIDDLEPERSON_ROLE,
+                allow: ["ViewChannel"],
+              }
             ],
           });
+
           activeTrade.channel = channel;
-            console.log(`[${TimeFormat.format(new Date())}]`,"Created new channel", channel.name);
+          console.log(`[${TimeFormat.format(new Date())}]`, "Created new channel", channel.name);
 
           // send message alerting both users to the channel and request for confirmation by partner
           const message = await channel.send({
@@ -139,7 +145,7 @@ async function start() {
               activeTrade.partner
             }.\n Trade:\n\`\`\`${activeTrade.initiator.username} is ${
               activeTrade.wts_or_wtb ? "buying" : "selling"
-            } ${activeTrade.amount} tao for a total of ${
+            } ${activeTrade.amount} QUIL for a total of ${
               activeTrade.total_price
             } ${
               activeTrade.currency
@@ -187,14 +193,14 @@ async function start() {
           // create new ticket for middlepersons
           // channel should be under the category of the "Middlepersons"
           let t_channel = await GetTicketChannel(interaction, all_categories, POSITION_LENGTH, client);
-          
+
           // create ticket
           const ticket = await t_channel.send({
             content: `New trade request from ${activeTrade.initiator} to ${
               activeTrade.partner
             }.\nTrade:\n\`\`\`${activeTrade.initiator.username} is ${
               activeTrade.wts_or_wtb ? "buying" : "selling"
-            } ${activeTrade.amount} tao for a total of ${
+            } ${activeTrade.amount} QUIL for a total of ${
               activeTrade.total_price
             } ${activeTrade.currency}\`\`\`\nStatus: Looking for <@&${process.env.MIDDLEPERSON_ROLE}>`,
             components: [
@@ -233,10 +239,10 @@ async function start() {
           });
           process.env.DEV_LOG
             ? console.warn(
-                new Date(),
-                interaction.user.username,
-                "tried to middleperson their own trade!"
-              )
+              new Date(),
+              interaction.user.username,
+              "tried to middleperson their own trade!"
+            )
             : null;
           return;
         }
@@ -247,7 +253,7 @@ async function start() {
             activeTrade.partner
           }.\nTrade:\n\`\`\`${activeTrade.initiator.username} is ${
             activeTrade.wts_or_wtb ? "buying" : "selling"
-          } ${activeTrade.amount} tao for a total of ${
+          } ${activeTrade.amount} QUIL for a total of ${
             activeTrade.total_price
           } ${activeTrade.currency}\`\`\`\nStatus: In Progress by ${
             activeTrade.middleperson
@@ -271,7 +277,7 @@ async function start() {
 
         // send message to channel
         await activeTrade.channel.send({
-          content: `${activeTrade.initiator} and ${activeTrade.partner} your trade will be handled by the Official OTC Middleperson, ${activeTrade.middleperson}. \n\n Steps\n1. ${activeTrade.middleperson} will post a TAO address for the seller to send to.\n2. Once paid, ${activeTrade.middleperson} will ask the buyer to send payment to the seller.\n3. Once payment has been received by the seller in their specified currency, ${activeTrade.middleperson} will send the TAO to the buyer.\n\n*Note: All middlepersons are volunteers and offer up their time freely, feel free to send an extra 1-5% as tip if you're feeling generous* **(Sellers: Always send 0.126 TAO extra to pay for the transaction fee)**`,
+          content: `${activeTrade.initiator} and ${activeTrade.partner} your trade will be handled by the Official OTC Middleperson, ${activeTrade.middleperson}. \n\n Steps\n1. ${activeTrade.middleperson} will post a QUIL address for the seller to send to.\n2. Once paid, ${activeTrade.middleperson} will ask the buyer to send payment to the seller.\n3. Once payment has been received by the seller in their specified currency, ${activeTrade.middleperson} will send the QUIL to the buyer.\n\n*Note: All middlepersons are volunteers and offer up their time freely, feel free to send an extra 1-5% as tip if you're feeling generous* **(Sellers: Always send extra QUIL to pay for the transaction fee)**`,
           // component to close ticket,
           components: [
             new Discord.ActionRowBuilder().addComponents(
@@ -306,7 +312,7 @@ async function start() {
                 activeTrade.partner
               }.\nTrade:\n\`\`\`${activeTrade.initiator.username} is ${
                 activeTrade.wts_or_wtb ? "buying" : "selling"
-              } ${activeTrade.amount} tao for a total of ${
+              } ${activeTrade.amount} QUIL for a total of ${
                 activeTrade.total_price
               } ${activeTrade.currency}\`\`\`\nStatus: Completed`,
             });
@@ -316,7 +322,7 @@ async function start() {
 
             // send message
             await otc_sales.send({
-              content: `A trade of ${activeTrade.amount} TAO for ${activeTrade.total_price} ${activeTrade.currency} has been completed by ${activeTrade.middleperson}.`,
+              content: `A trade of ${activeTrade.amount} QUIL for ${activeTrade.total_price} ${activeTrade.currency} has been completed by ${activeTrade.middleperson}.`,
             });
           }, 15000);
         } else {
@@ -355,7 +361,8 @@ async function start() {
 
         setTimeout(async () => {
           await TRADE_CHANNEL.delete()
-            .then(() => {})
+            .then(() => {
+            })
             .catch((err) => {
               console.error(err);
               console.log(
@@ -419,6 +426,7 @@ async function start() {
 }
 
 start();
+
 async function GetActiveTradesCategory(all_categories, guild, POSITION_LENGTH) {
   const ChannelName = "Active Trades";
   let active_trades_category = await CreateChannelCategory({
@@ -432,19 +440,19 @@ async function GetActiveTradesCategory(all_categories, guild, POSITION_LENGTH) {
 
 async function GetTicketChannel(interaction, all_categories, POSITION_LENGTH, client) {
   let t_channel;
-  if (process.env.TICKET_CHANNEL) {
-    t_channel = await interaction.guild.channels.cache.get(process.env.TICKET_CHANNEL);
-  } else {
-    // try to set t_channel to the channel with the name Middlepersons
-    t_channel = await interaction.guild.channels.cache.find(
-      (channel) => channel.name.toLowerCase() === "tickets"
-    );
-  }
+  // if (process.env.TICKET_CHANNEL) {
+  //   t_channel = await interaction.guild.channels.cache.get(process.env.TICKET_CHANNEL);
+  // } else {
+  //   // try to set t_channel to the channel with the name Middlepersons
+  //   t_channel = await interaction.guild.channels.cache.find(
+  //     (channel) => channel.name.toLowerCase() === "tickets"
+  //   );
+  // }
   if (!t_channel) {
     const middlepersons_category = await CreateChannelCategory({
       all_categories,
       ChannelName: "Middlepersons",
-      interaction,
+      guild: interaction.guild,
       positionLength: POSITION_LENGTH,
       permissionOverwrites: [
         {
@@ -470,13 +478,13 @@ async function GetTicketChannel(interaction, all_categories, POSITION_LENGTH, cl
     });
 
     // get channel in category labeled "tickets" using discordjs
-    let tickets_channel = interaction.guild.channels.cache.filter(
-      (channel) => channel.name.toLowerCase() === "tickets"
+    t_channel = interaction.guild.channels.cache.filter(
+      (channel) => channel.name.toLowerCase() === "middleperson-tickets"
     );
     // if tickets doesnt exist, create it
-    if (!tickets_channel || tickets_channel.size === 0) {
-      tickets_channel = await interaction.guild.channels.create({
-        name: "Tickets",
+    if (!t_channel || t_channel.size == 0) {
+      t_channel = await interaction.guild.channels.create({
+        name: "Middleperson-Tickets",
         type: 0,
         parent: middlepersons_category,
         permissionOverwrites: [
@@ -496,11 +504,13 @@ async function GetTicketChannel(interaction, all_categories, POSITION_LENGTH, cl
         ],
       });
     } else {
-      // first item in collection
-      tickets_channel = tickets_channel.first();
-      // tickets_channel = tickets_channel[0];
+      t_channel = t_channel.first();
     }
-    t_channel = tickets_channel;
+    // } else {
+    //   // first item in collection
+    //   tickets_channel = tickets_channel.first();
+    //   // tickets_channel = tickets_channel[0];
+    // }
   }
   return t_channel;
 }
