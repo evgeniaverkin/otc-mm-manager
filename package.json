@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
-    "debug": "nodemon --inspect index.js"
+    "start": "node app.js",
+    "debug": "nodemon --inspect app.js"
   },
   "dependencies": {
     "discord.js": "^14.5.0",
